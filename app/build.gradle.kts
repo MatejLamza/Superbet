@@ -54,6 +54,8 @@ dependencies {
 
     implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
     implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
 
     //di
     implementation(libs.koin)
