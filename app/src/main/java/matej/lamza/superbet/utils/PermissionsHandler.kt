@@ -38,7 +38,7 @@ object PermissionsHandler {
             .show()
     }
 
-    private fun checkIfPermissionsAreAlreadyGranted(context: Context): Boolean {
+    fun checkIfPermissionsAreAlreadyGranted(context: Context): Boolean {
         return PERMISSIONS.map { permission ->
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }.none { isGranted -> !isGranted }
