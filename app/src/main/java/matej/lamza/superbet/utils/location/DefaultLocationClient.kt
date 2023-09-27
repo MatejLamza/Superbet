@@ -6,11 +6,10 @@ import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.tasks.asDeferred
 import matej.lamza.core_model.exceptions.MissingGPSException
 import matej.lamza.superbet.utils.extensions.isGPSEnabled
 
@@ -19,21 +18,18 @@ private const val TAG = "DefaultLocationClient"
 
 class DefaultLocationClient(
     private val context: Context,
-    private val client: FusedLocationProviderClient
+    private val locationClient: FusedLocationProviderClient
 ) : LocationClient {
-
-    private val cancellationToken by lazy { CancellationTokenSource() }
 
     @SuppressLint("MissingPermission")
     override suspend fun getCurrentLocation(): Flow<Location> {
-        return flow {
-            emit(
-                client
-                    .getCurrentLocation(Priority.PRIORITY_PASSIVE, cancellationToken.token)
-                    .asDeferred()
-                    .await()
-            )
-        }.onStart { checkIfGPSIsEnabled() } //Before providing location check if GPS is enabled
+        return callbackFlow {
+            locationClient
+                .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener { location -> if (location != null) trySend(location) }
+            awaitClose { locationClient.flushLocations() }
+        }
+            .onStart { throw IllegalStateException("GPS IS Disabled stopping flow") }
     }
 
     override fun checkIfGPSIsEnabled(): Boolean {
@@ -41,5 +37,4 @@ class DefaultLocationClient(
         if (!locationManager.isGPSEnabled) throw MissingGPSException()
         return true
     }
-
 }
