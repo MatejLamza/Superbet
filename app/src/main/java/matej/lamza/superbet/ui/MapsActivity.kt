@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -39,7 +40,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     lifecycleScope.launch {
                         locationClient.getCurrentLocation()
-                            .catch { Log.d(TAG, "Caught exception") }
+                            .catch {
+                                Log.d(TAG, "Caught exception: ")
+                                showGPSDialog(it)
+                            }
                             .collectLatest { Log.d(TAG, "Dobio sam: $it ") }
                     }
                 }
@@ -72,6 +76,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
+    private fun showGPSDialog(exception: Throwable) {
+        if (exception is ResolvableApiException) {
+            runCatching { exception.startResolutionForResult(this, REQUEST_CHECK_SETTINGS) }
+        }
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val sydney = LatLng(-34.0, 151.0)
@@ -86,6 +96,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onDestroy() {
         super.onDestroy()
         binding = null
+    }
+
+    companion object {
+        const val REQUEST_CHECK_SETTINGS = 90
     }
 
 }

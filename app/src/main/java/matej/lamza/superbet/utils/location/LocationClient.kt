@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface LocationClient {
     suspend fun getCurrentLocation(): Flow<Location>
 
-    fun checkIfGPSIsEnabled(): Boolean
+    suspend fun checkIfGPSIsEnabled(): Boolean
 }
