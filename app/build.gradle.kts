@@ -39,31 +39,36 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
+    //region CORE
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
+    //endregion
 
+    //region LIFECYCLE
     implementation(libs.androidx.lifecycle)
     implementation(libs.androidx.fragment)
     implementation(libs.androidx.livedata)
-
-    //region LIFECYCLE
-
     //endregion
 
-    implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    //region MAPS
+    implementation(libs.maps.utils.ktx)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
+    //endregion
 
-    //di
+    //region DI
     implementation(libs.koin)
     implementation(libs.koin.android)
+
+    //endregion
 
     implementation(project(mapOf("path" to ":core-data")))
     implementation(project(mapOf("path" to ":core-network")))
     implementation(project(mapOf("path" to ":core-model")))
-
-
+    
     //region TESTS
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

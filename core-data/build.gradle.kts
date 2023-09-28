@@ -20,15 +20,11 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
-
-    implementation(libs.sandwich)
-
+    //DI
     implementation(libs.koin)
     implementation(libs.koin.android)
 
+    implementation(libs.sandwich)
 
     implementation(project(mapOf("path" to ":core-model")))
     implementation(project(mapOf("path" to ":core-network")))
