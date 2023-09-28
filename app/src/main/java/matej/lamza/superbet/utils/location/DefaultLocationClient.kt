@@ -26,11 +26,18 @@ class DefaultLocationClient(
 ) : LocationClient {
 
     private val client: SettingsClient = LocationServices.getSettingsClient(context)
-    private val builder = LocationSettingsRequest
+    private val settingsBuilder = LocationSettingsRequest
         .Builder()
         .addLocationRequest(createLocationRequest())
         .setAlwaysShow(true)
 
+    /**
+     * Permissions are already checked before this step.
+     * [onStart] will check weather the user has enabled location services before starting the flow and asking
+     * for current location. In case location services are enabled flow will continue and in case of missing location
+     * services exception will be thrown.
+     *
+     */
     @SuppressLint("MissingPermission")
     override suspend fun getCurrentLocation(): Flow<Location> {
         return callbackFlow {
@@ -39,21 +46,29 @@ class DefaultLocationClient(
                 .addOnSuccessListener { location -> if (location != null) trySend(location) }
 
             awaitClose { locationClient.flushLocations() }
+
         }.onStart { checkIfGPSIsEnabled() }
     }
 
+    /**
+     * @return [Boolean] if user have GPS setting enabled.
+     * @throws ResolvableApiException depending on [Priority] flag.
+     *
+     */
     override suspend fun checkIfGPSIsEnabled(): Boolean {
         return suspendCoroutine { continuation ->
-            client.checkLocationSettings(builder.build())
-                .addOnSuccessListener {
-                    continuation.resume(true)
-                }
-                .addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
+            client.checkLocationSettings(settingsBuilder.build())
+                .addOnSuccessListener { continuation.resume(true) }
+                .addOnFailureListener { continuation.resumeWithException(it) }
         }
     }
 
+    /**
+     * In case [Priority.PRIORITY_HIGH_ACCURACY] [client] will throw an exception if user disabled GPS.
+     * Its important to have flag set to [Priority.PRIORITY_HIGH_ACCURACY] because
+     * we can use exception that [checkIfGPSIsEnabled] throws and prompt user to turn on location services using
+     * [ResolvableApiException.startResolutionForResult]
+     */
     private fun createLocationRequest() =
         LocationRequest
             .Builder(Priority.PRIORITY_HIGH_ACCURACY, 0)
