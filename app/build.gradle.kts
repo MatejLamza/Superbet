@@ -54,9 +54,11 @@ dependencies {
 
     //region MAPS
     implementation(libs.maps.utils.ktx)
+    implementation(libs.maps.utils.k)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.maps.utils.android)
     //endregion
 
     //region DI

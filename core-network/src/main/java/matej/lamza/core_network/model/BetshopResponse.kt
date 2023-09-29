@@ -6,6 +6,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class BetshopResponse(
     @field:Json(name = "name") val name: String,
+    @field:Json(name = "location") val location: BetshopLocationResponse,
     @field:Json(name = "id") val id: Long,
     @field:Json(name = "county") val county: String,
     @field:Json(name = "city_id") val cityId: Long,
