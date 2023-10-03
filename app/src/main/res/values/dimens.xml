@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--    Padding -->
+    <dimen name="padding_default">16dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+
+    <!--    Height -->
+    <dimen name="sheet_peak_height">85dp</dimen>
+
+    <!--    Dimens-->
+    <dimen name="corner_radius_default">16dp</dimen>
+    <dimen name="marker_dimensions">15dp</dimen>
+</resources>
