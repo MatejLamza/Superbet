@@ -43,7 +43,6 @@ kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-cor
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 #Maps
-maps-utils-ktx = { module = "com.google.maps.android:maps-utils-ktx", version.ref = "mapsUtilsKtx" }
 maps-utils-k = { module = "com.google.maps.android:maps-ktx", version.ref = "mapsKTX" }
 maps-utils-android = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapUtils" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }

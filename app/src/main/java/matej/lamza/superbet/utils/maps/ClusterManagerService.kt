@@ -7,11 +7,12 @@ import com.google.maps.android.clustering.algo.ScreenBasedAlgorithm
 import kotlinx.coroutines.flow.StateFlow
 import matej.lamza.core_model.MapMarkerState
 
-interface ClusterManager<T : ClusterItem> {
+interface ClusterManagerService<T : ClusterItem> {
 
     val markerStateFlow: StateFlow<MapMarkerState>
 
     fun setupClusterManager(algorithm: ScreenBasedAlgorithm<T>? = null): ClusterManager<T>
 
     fun updateMarkerState(currentlySelectedMarker: Marker?)
+
 }

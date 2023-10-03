@@ -11,11 +11,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import matej.lamza.core_model.Betshop
 import matej.lamza.core_model.MapMarkerState
+import matej.lamza.superbet.utils.extensions.setInactive
 import matej.lamza.superbet.utils.extensions.setStateIcon
 
 class BetshopClusterManager(
     private val activity: Activity, private val googleMap: GoogleMap, private val externalScope: CoroutineScope
-) : ClusterManager<Betshop> {
+) : ClusterManagerService<Betshop> {
 
     private val _markerStateFlow = MutableStateFlow<MapMarkerState>(MapMarkerState.Inactive())
 
@@ -46,7 +47,7 @@ class BetshopClusterManager(
                 MapMarkerState.Inactive(currentlySelectedMarker)
             } else {
                 // unselect previous marker and select new one
-                _markerStateFlow.value.setStateIcon()
+                _markerStateFlow.value.marker?.setInactive()
                 MapMarkerState.Active(currentlySelectedMarker)
             }
         }

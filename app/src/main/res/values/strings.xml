@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Superbet</string>
+    <string name="betshop_open_now">Open now until %1$s</string>
+    <string name="betshop_closed">Opens tomorrow at %1$s</string>
 </resources>

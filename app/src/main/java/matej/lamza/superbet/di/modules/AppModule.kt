@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import matej.lamza.superbet.utils.location.DefaultLocationClient
 import matej.lamza.superbet.utils.location.LocationClient
 import matej.lamza.superbet.utils.maps.BetshopClusterManager
-import matej.lamza.superbet.utils.maps.ClusterManager
+import matej.lamza.superbet.utils.maps.ClusterManagerService
 import org.koin.dsl.module
 
 val appModule = module {
@@ -16,7 +16,7 @@ val appModule = module {
         DefaultLocationClient(context, locationClient)
     }
 
-    single<ClusterManager<*>> { (activity: Activity, googleMaps: GoogleMap, scope: CoroutineScope) ->
+    single<ClusterManagerService<*>> { (activity: Activity, googleMaps: GoogleMap, scope: CoroutineScope) ->
         BetshopClusterManager(activity, googleMaps, scope)
     }
 }
