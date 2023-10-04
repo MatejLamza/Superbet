@@ -28,6 +28,10 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
     @get:Bindable
     var betshop: Betshop? by bindingProperty(null)
 
+    fun updateSelectedBetshop(selectedBetshop: Betshop?) {
+        if (selectedBetshop != null) betshop = selectedBetshop
+    }
+
     /**
      * top-right latitude (lat1),
      * top-right longitude (lon1),

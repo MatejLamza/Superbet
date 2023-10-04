@@ -24,7 +24,6 @@ import matej.lamza.core_model.Betshop
 import matej.lamza.core_model.MapMarkerState
 import matej.lamza.superbet.R
 import matej.lamza.superbet.databinding.ActivityMapsBinding
-import matej.lamza.superbet.utils.DateUtils
 import matej.lamza.superbet.utils.PermissionsHandler
 import matej.lamza.superbet.utils.location.LocationClient
 import matej.lamza.superbet.utils.maps.ClusterManagerService
@@ -36,15 +35,13 @@ import org.koin.core.parameter.parametersOf
 const val TAG = "MapsActivity"
 
 class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps) {
-    lateinit var clusterManager: ClusterManager<Betshop>
-    lateinit var map: GoogleMap
 
     companion object {
         const val REQUEST_CHECK_SETTINGS = 90
     }
 
-
-    private lateinit var mapBinding: ActivityMapsBinding
+    private lateinit var clusterManager: ClusterManager<Betshop>
+    private lateinit var map: GoogleMap
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
@@ -52,9 +49,7 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
     private val mapViewModel by viewModel<MapViewModel>()
     private val betshopClusterManager by inject<ClusterManagerService<Betshop>> {
         parametersOf(
-            this,
-            map,
-            lifecycleScope
+            this, map, lifecycleScope
         )
     }
 
@@ -63,7 +58,9 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     lifecycleScope.launch {
-                        locationClient.getCurrentLocation().catch { showGPSPromptDialog(it) }
+                        locationClient
+                            .getCurrentLocation()
+                            .catch { showGPSPromptDialog(it) }
                             .collectLatest { Log.d(TAG, "Received current location: $it ") }
                     }
                 }
@@ -77,16 +74,10 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_Superbet)
-
-//        mapBinding = ActivityMapsBinding.inflate(layoutInflater)
-//        setContentView(mapBinding.root)
-
-//        bottomSheetBehavior = BottomSheetBehavior.from(mapBinding.bottomSheet.bottomSheet)
-
         binding {
             vm = mapViewModel
-
             bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+
             //This will make sure our map is initialized before observers can be triggered
             lifecycleScope.launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -120,7 +111,6 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         }
 
         map.setOnMapClickListener {
-            Log.d("bbb", "Kliknuo si na mapu: ")
             //remove marker when user clicks somewhere else on the map
             //todo maybe call manager to restart marker state
             betshopClusterManager.updateMarkerState(null)
@@ -136,41 +126,33 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
             }
         }
 
-
         lifecycleScope.launch {
             betshopClusterManager.selectedBetshop.collect { selectedBetshop ->
-                if (selectedBetshop != null) {
-                    bindBetshopInfoToView(selectedBetshop)
-                }
+                mapViewModel.updateSelectedBetshop(selectedBetshop)
             }
         }
 
         lifecycleScope.launch {
             betshopClusterManager.markerStateFlow.collect {
-                if (it is MapMarkerState.Active) setBottomSheetVisibility(true)
-                else if (it is MapMarkerState.Inactive) setBottomSheetVisibility(false)
+                handleBottomSheetInfoVisibility(it)
             }
         }
     }
 
-    private fun bindBetshopInfoToView(betshop: Betshop) {
-        with(binding) {
-            location.text = betshop.title
-            phone.text = betshop.snippet
-            schedule.text =
-                if (DateUtils.isCurrentlyOpened()) getString(R.string.betshop_open_now, DateUtils.END_TIME.toString())
-                else getString(R.string.betshop_closed, DateUtils.START_TIME.toString())
+    private fun handleBottomSheetInfoVisibility(markerState: MapMarkerState) {
+        binding.bottomSheet.visibility = View.VISIBLE
+        bottomSheetBehavior.state = when (markerState) {
+            is MapMarkerState.Active -> BottomSheetBehavior.STATE_EXPANDED
+            is MapMarkerState.Inactive -> BottomSheetBehavior.STATE_HIDDEN
         }
     }
 
-    private fun setBottomSheetVisibility(isVisible: Boolean) {
-        if (isVisible) binding.bottomSheet.visibility = View.VISIBLE
-        val updatedState = if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
-        bottomSheetBehavior.state = updatedState
-    }
-
     private fun showGPSPromptDialog(throwable: Throwable) {
-        if (throwable is ResolvableApiException)
-            kotlin.runCatching { throwable.startResolutionForResult(this, REQUEST_CHECK_SETTINGS) }
+        if (throwable is ResolvableApiException) runCatching {
+            throwable.startResolutionForResult(
+                this,
+                REQUEST_CHECK_SETTINGS
+            )
+        }
     }
 }

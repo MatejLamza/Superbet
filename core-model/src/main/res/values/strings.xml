@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="betshop_open_now">Open now until %1$s</string>
+    <string name="betshop_closed">Opens tomorrow at %1$s</string>
+</resources>

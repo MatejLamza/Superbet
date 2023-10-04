@@ -1,4 +1,4 @@
-package matej.lamza.superbet.utils
+package matej.lamza.core_model.utils
 
 import android.os.Build
 import androidx.annotation.RequiresApi
