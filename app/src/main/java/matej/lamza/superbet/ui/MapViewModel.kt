@@ -1,26 +1,32 @@
 package matej.lamza.superbet.ui
 
 import android.util.Log
+import androidx.databinding.Bindable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.VisibleRegion
+import com.skydoves.bindables.BindingViewModel
+import com.skydoves.bindables.bindingProperty
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import matej.lamza.core_data.repository.BetshopRepository
 import matej.lamza.core_model.Betshop
 
 fun Double.round(decimals: Int = 5): Double = "%.${decimals}f".format(this).toDouble()
 
-class MapViewModel(private val betshopRepository: BetshopRepository) : ViewModel() {
+class MapViewModel(private val betshopRepository: BetshopRepository) : BindingViewModel() {
 
     private var processCameraJob: Job? = null
 
     private val _visibleBetshops = MutableLiveData<List<Betshop>>()
     val visibleBetshops: LiveData<List<Betshop>> = _visibleBetshops
+
+    @get:Bindable
+    var betshop: Betshop? by bindingProperty(null)
 
     /**
      * top-right latitude (lat1),
@@ -39,8 +45,8 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : ViewModel
                     visibleRegion.nearLeft.latitude,
                     visibleRegion.nearLeft.longitude,
                 ), {}, {}, {})
+                .onCompletion { Log.d(TAG, "Current visible region: ${visibleRegion}") }
                 .collectLatest { _visibleBetshops.value = it }
-            Log.d(TAG, "Current visible region: ${visibleRegion}")
         }
     }
 }

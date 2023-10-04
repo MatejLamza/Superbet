@@ -33,6 +33,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
         buildConfig = true
     }
 }
@@ -70,7 +71,9 @@ dependencies {
     implementation(project(mapOf("path" to ":core-data")))
     implementation(project(mapOf("path" to ":core-network")))
     implementation(project(mapOf("path" to ":core-model")))
-    
+
+    implementation(libs.bindables)
+
     //region TESTS
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

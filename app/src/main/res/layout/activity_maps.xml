@@ -1,30 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.MapsActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <data>
+
+        <variable
+            name="vm"
+            type="matej.lamza.superbet.ui.MapViewModel" />
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.MapsActivity">
 
-        android:layout_height="match_parent" />
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/current_location"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_margin="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_height="match_parent" />
 
-    <!--bottom sheet container-->
-    <include
-        android:id="@+id/bottom_sheet"
-        layout="@layout/slice_bet_shop_bottom_info"
-        android:visibility="invisible" />
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/current_location"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="20dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <!--bottom sheet container-->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_sheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:behavior_hideable="true"
+            app:behavior_peekHeight="@dimen/sheet_peak_height"
+            app:layout_behavior="@string/bottom_sheet_behavior">
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:backgroundTint="@color/white"
+                app:cardCornerRadius="@dimen/corner_radius_default"
+                app:cardElevation="@dimen/padding_default"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_small"
+                    android:padding="@dimen/padding_default">
+
+                    <View
+                        android:id="@+id/separator"
+                        android:layout_width="30dp"
+                        android:layout_height="5dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/padding_small"
+                        android:background="@color/black"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageButton
+                        android:id="@+id/location_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="location_image"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/separator"
+                        app:srcCompat="@drawable/baseline_location_on_24"
+                        app:tint="@color/black" />
+
+                    <TextView
+                        android:id="@+id/location"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/padding_default"
+                        android:text="@{vm.betshop.address}"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textColor="@color/black"
+                        app:layout_constraintBottom_toBottomOf="@id/location_img"
+                        app:layout_constraintStart_toEndOf="@id/location_img"
+                        app:layout_constraintTop_toTopOf="@id/location_img"
+                        tools:text="740 Valencia St, San Francisco, CA" />
+
+                    <ImageButton
+                        android:id="@+id/phone_image"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/location_img"
+                        app:srcCompat="@drawable/baseline_phone_24"
+                        app:tint="@color/black" />
+
+                    <TextView
+                        android:id="@+id/phone"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/padding_default"
+                        android:gravity="center_vertical"
+                        android:text="(415) 349-0942"
+
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textColor="@color/black"
+                        app:layout_constraintBottom_toBottomOf="@id/phone_image"
+                        app:layout_constraintStart_toEndOf="@id/phone_image"
+                        app:layout_constraintTop_toTopOf="@id/phone_image" />
+
+                    <ImageButton
+                        android:id="@+id/schedule_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/phone_image"
+                        app:srcCompat="@drawable/baseline_schedule_24"
+                        app:tint="@color/black" />
+
+                    <TextView
+                        android:id="@+id/schedule"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/padding_default"
+                        android:gravity="center_vertical"
+                        android:text="Wed, 10 AM - 9 PM"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textColor="@color/black"
+                        app:layout_constraintBottom_toBottomOf="@id/schedule_img"
+                        app:layout_constraintStart_toEndOf="@id/schedule_img"
+                        app:layout_constraintTop_toTopOf="@id/schedule_img" />
+
+                    <TextView
+                        android:id="@+id/route"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/padding_default"
+                        android:text="ROUTE"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="@id/schedule"
+                        app:layout_constraintTop_toBottomOf="@id/schedule_img" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
+

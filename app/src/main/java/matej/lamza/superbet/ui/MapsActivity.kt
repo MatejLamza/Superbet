@@ -1,12 +1,10 @@
 package matej.lamza.superbet.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +16,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.ktx.awaitMap
+import com.skydoves.bindables.BindingActivity
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -36,7 +35,7 @@ import org.koin.core.parameter.parametersOf
 
 const val TAG = "MapsActivity"
 
-class MapsActivity : AppCompatActivity() {
+class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps) {
     lateinit var clusterManager: ClusterManager<Betshop>
     lateinit var map: GoogleMap
 
@@ -75,55 +74,60 @@ class MapsActivity : AppCompatActivity() {
             }
         }
 
-    @SuppressLint("PotentialBehaviorOverride")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_Superbet)
 
-        mapBinding = ActivityMapsBinding.inflate(layoutInflater)
-        setContentView(mapBinding.root)
+//        mapBinding = ActivityMapsBinding.inflate(layoutInflater)
+//        setContentView(mapBinding.root)
 
-        bottomSheetBehavior = BottomSheetBehavior.from(mapBinding.bottomSheet.bottomSheet)
+//        bottomSheetBehavior = BottomSheetBehavior.from(mapBinding.bottomSheet.bottomSheet)
 
-        //This will make sure our map is initialized before observers can be triggered
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
-                val mapFragment: SupportMapFragment =
-                    supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        binding {
+            vm = mapViewModel
 
-                map = mapFragment.awaitMap()
+            bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+            //This will make sure our map is initialized before observers can be triggered
+            lifecycleScope.launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                    val mapFragment: SupportMapFragment =
+                        supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
 
-                clusterManager = betshopClusterManager.setupClusterManager()
+                    map = mapFragment.awaitMap()
 
-                setupListeners()
-                setObservers()
+                    clusterManager = betshopClusterManager.setupClusterManager()
+
+                    setupListeners()
+                    setObservers()
+                }
             }
         }
     }
 
     private fun setupListeners() {
         map.setOnCameraIdleListener {
-            Log.d("bbb", "setupListeners: kamera stala")
             mapViewModel.processCameraMovement(map.projection.visibleRegion)
         }
 
-        mapBinding.currentLocation.setOnClickListener {
+        binding.currentLocation.setOnClickListener {
             PermissionsHandler.requestPermission(this, this, requestPermissionLauncher)
         }
 
-        clusterManager.markerCollection.setOnMarkerClickListener {
-            betshopClusterManager.updateMarkerState(it)
+        clusterManager.markerCollection.setOnMarkerClickListener { marker ->
+            betshopClusterManager.updateCurrentlySelectedBetshop(clusterManager, marker)
+            betshopClusterManager.updateMarkerState(marker)
             false
         }
 
         map.setOnMapClickListener {
+            Log.d("bbb", "Kliknuo si na mapu: ")
             //remove marker when user clicks somewhere else on the map
             //todo maybe call manager to restart marker state
             betshopClusterManager.updateMarkerState(null)
         }
     }
 
-    private suspend fun setObservers() {
+    private fun setObservers() {
         with(mapViewModel) {
             visibleBetshops.observe(this@MapsActivity) {
                 if (clusterManager.algorithm.items.isNotEmpty()) clusterManager.clearItems()
@@ -132,14 +136,25 @@ class MapsActivity : AppCompatActivity() {
             }
         }
 
-        betshopClusterManager.markerStateFlow.collect {
-            if (it is MapMarkerState.Active) setBottomSheetVisibility(true)
-            else if (it is MapMarkerState.Inactive) setBottomSheetVisibility(false)
+
+        lifecycleScope.launch {
+            betshopClusterManager.selectedBetshop.collect { selectedBetshop ->
+                if (selectedBetshop != null) {
+                    bindBetshopInfoToView(selectedBetshop)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            betshopClusterManager.markerStateFlow.collect {
+                if (it is MapMarkerState.Active) setBottomSheetVisibility(true)
+                else if (it is MapMarkerState.Inactive) setBottomSheetVisibility(false)
+            }
         }
     }
 
     private fun bindBetshopInfoToView(betshop: Betshop) {
-        with(mapBinding.bottomSheet) {
+        with(binding) {
             location.text = betshop.title
             phone.text = betshop.snippet
             schedule.text =
@@ -149,7 +164,7 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun setBottomSheetVisibility(isVisible: Boolean) {
-        if (isVisible) mapBinding.bottomSheet.bottomSheet.visibility = View.VISIBLE
+        if (isVisible) binding.bottomSheet.visibility = View.VISIBLE
         val updatedState = if (isVisible) BottomSheetBehavior.STATE_EXPANDED else BottomSheetBehavior.STATE_COLLAPSED
         bottomSheetBehavior.state = updatedState
     }

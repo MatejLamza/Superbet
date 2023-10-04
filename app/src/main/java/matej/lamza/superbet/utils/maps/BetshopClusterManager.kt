@@ -3,10 +3,11 @@ package matej.lamza.superbet.utils.maps
 import android.app.Activity
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
-import com.google.maps.android.clustering.algo.ScreenBasedAlgorithm
+import com.google.maps.android.clustering.ClusterManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import matej.lamza.core_model.Betshop
@@ -19,17 +20,17 @@ class BetshopClusterManager(
 ) : ClusterManagerService<Betshop> {
 
     private val _markerStateFlow = MutableStateFlow<MapMarkerState>(MapMarkerState.Inactive())
+    private val _selectedBetshop = MutableStateFlow<Betshop?>(null)
 
-    override val markerStateFlow = _markerStateFlow
-        .onEach { it.setStateIcon() }
+    override val markerStateFlow = _markerStateFlow.onEach { it.setStateIcon() }
         .stateIn(externalScope, SharingStarted.WhileSubscribed(), _markerStateFlow.value)
+    override val selectedBetshop: StateFlow<Betshop?>
+        get() = _selectedBetshop.stateIn(externalScope, SharingStarted.WhileSubscribed(), _selectedBetshop.value)
 
 
     //    algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
-    override fun setupClusterManager(algorithm: ScreenBasedAlgorithm<Betshop>?):
-            com.google.maps.android.clustering.ClusterManager<Betshop> {
+    override fun setupClusterManager(): com.google.maps.android.clustering.ClusterManager<Betshop> {
         return com.google.maps.android.clustering.ClusterManager<Betshop>(activity, googleMap).apply {
-            if (algorithm != null) this.algorithm = algorithm
             renderer = BetshopClusterRenderer(activity, googleMap, this)
         }
     }
@@ -51,5 +52,13 @@ class BetshopClusterManager(
                 MapMarkerState.Active(currentlySelectedMarker)
             }
         }
+    }
+
+    override fun updateCurrentlySelectedBetshop(clusterManager: ClusterManager<Betshop>, marker: Marker?) {
+        if (marker == null) {
+            _selectedBetshop.value = null
+            return
+        }
+        _selectedBetshop.value = clusterManager.algorithm.items.find { it.position == marker?.position }
     }
 }
