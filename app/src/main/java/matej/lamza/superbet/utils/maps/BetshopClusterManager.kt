@@ -27,22 +27,18 @@ import matej.lamza.superbet.utils.extensions.setStateIcon
  */
 
 class BetshopClusterManager(
-    private val activity: Activity,
-    private val googleMap: GoogleMap,
-    private val externalScope: CoroutineScope
+    private val activity: Activity, private val googleMap: GoogleMap, private val externalScope: CoroutineScope
 ) : ClusterManagerService<Betshop> {
 
     private val _markerStateFlow = MutableStateFlow<MapMarkerState>(MapMarkerState.Inactive())
     private val _selectedBetshop = MutableStateFlow<Betshop?>(null)
 
-    override val markerStateFlow = _markerStateFlow
-        .onEach { it.setStateIcon() }
+    override val markerStateFlow = _markerStateFlow.onEach { it.setStateIcon() }
         .stateIn(externalScope, SharingStarted.WhileSubscribed(), _markerStateFlow.value)
     override val selectedBetshop: StateFlow<Betshop?>
         get() = _selectedBetshop.stateIn(externalScope, SharingStarted.WhileSubscribed(), _selectedBetshop.value)
 
     override fun setupClusterManager(): ClusterManager<Betshop> {
-        //    algorithm = NonHierarchicalViewBasedAlgorithm(screenDimensions.width, screenDimensions.height)
         return ClusterManager<Betshop>(activity, googleMap).apply {
             renderer = BetshopClusterRenderer(activity, googleMap, this)
         }
@@ -52,6 +48,9 @@ class BetshopClusterManager(
     override fun updateMarkerState(currentlySelectedMarker: Marker?) {
         if (currentlySelectedMarker != null && _markerStateFlow.value.marker == null) {
             // No marker is selected yet
+            _markerStateFlow.value = MapMarkerState.Active(currentlySelectedMarker)
+        } else if (currentlySelectedMarker != null && _markerStateFlow.value is MapMarkerState.Inactive) {
+            //if user clicks on last inactive marker
             _markerStateFlow.value = MapMarkerState.Active(currentlySelectedMarker)
         } else if (_markerStateFlow.value.marker != null && currentlySelectedMarker != null) {
             // Marker already selected check if user clicked on same marker
@@ -63,7 +62,17 @@ class BetshopClusterManager(
                 _markerStateFlow.value = MapMarkerState.Inactive(_markerStateFlow.value.marker)
                 _markerStateFlow.value = MapMarkerState.Active(currentlySelectedMarker)
             }
+        } else if (currentlySelectedMarker == null) {
+            //if user clicks on map but not on marker we want to hide active marker and set it to inactive
+            _markerStateFlow.value = MapMarkerState.Inactive(_markerStateFlow.value.marker)
+            _markerStateFlow.value = MapMarkerState.Inactive(null)
         }
+    }
+
+    override fun createCluster(clusterManager: ClusterManager<Betshop>, dataset: Collection<Betshop>) {
+        clusterManager.clearItems()
+        clusterManager.addItems(dataset)
+        clusterManager.cluster()
     }
 
     override fun updateCurrentlySelectedBetshop(clusterManager: ClusterManager<Betshop>, marker: Marker?) {

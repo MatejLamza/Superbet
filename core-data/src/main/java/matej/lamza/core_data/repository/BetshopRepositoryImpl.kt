@@ -1,5 +1,6 @@
 package matej.lamza.core_data.repository
 
+import android.util.Log
 import androidx.annotation.WorkerThread
 import com.skydoves.sandwich.message
 import com.skydoves.sandwich.onFailure
@@ -14,17 +15,28 @@ import matej.lamza.core_model.Betshop
 import matej.lamza.core_model.mapper.asDomain
 import matej.lamza.core_network.service.BetshopService
 
+private const val TAG = "BetshopRepository"
+
 class BetshopRepositoryImpl(private val betshopService: BetshopService) : BetshopRepository {
 
     @WorkerThread
     override fun fetchAllBetshopsForGivenLocation(
         cords: List<Double>, onStart: () -> Unit, onComplete: () -> Unit, onError: (String?) -> Unit
     ): Flow<List<Betshop>> = flow {
-        val response = betshopService.fetchBetshops(cords.joinToString(separator = ","))
+        val parameter = cords.joinToString(separator = ",").trim()
+        Log.d(TAG, "Given cords: $parameter:")
+        val response = betshopService.fetchBetshops(parameter)
         response.suspendOnSuccess {
-            emit(data.betshops.asDomain())
-        }.onFailure {
-            onError(message())
+            val data = data.betshops.asDomain()
+            Log.d(TAG, "Data from API: ${data.size}")
+            emit(data)
         }
-    }.onStart { onStart() }.onCompletion { onComplete() }.flowOn(Dispatchers.IO)
+            .onFailure {
+                Log.e(TAG, "Erorr happend ${this.message()} ")
+                onError(message())
+            }
+    }
+        .onStart { onStart() }
+        .onCompletion { onComplete() }
+        .flowOn(Dispatchers.IO)
 }

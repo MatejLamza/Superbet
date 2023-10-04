@@ -7,6 +7,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.common.api.ResolvableApiException
@@ -96,8 +97,12 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
     }
 
     private fun setupListeners() {
-        map.setOnCameraIdleListener {
-            mapViewModel.processCameraMovement(map.projection.visibleRegion)
+        map.setOnCameraIdleListener { mapViewModel.processCameraMovement(map.projection.visibleRegion) }
+
+        map.setOnMapClickListener {
+            //remove marker when user clicks somewhere else on the map
+            //todo maybe call manager to restart marker state
+            betshopClusterManager.updateMarkerState(null)
         }
 
         binding.currentLocation.setOnClickListener {
@@ -107,22 +112,14 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         clusterManager.markerCollection.setOnMarkerClickListener { marker ->
             betshopClusterManager.updateCurrentlySelectedBetshop(clusterManager, marker)
             betshopClusterManager.updateMarkerState(marker)
-            false
-        }
-
-        map.setOnMapClickListener {
-            //remove marker when user clicks somewhere else on the map
-            //todo maybe call manager to restart marker state
-            betshopClusterManager.updateMarkerState(null)
+            true
         }
     }
 
     private fun setObservers() {
         with(mapViewModel) {
-            visibleBetshops.observe(this@MapsActivity) {
-                if (clusterManager.algorithm.items.isNotEmpty()) clusterManager.clearItems()
-                clusterManager.addItems(it)
-                clusterManager.cluster()
+            visibleBetshops.distinctUntilChanged().observe(this@MapsActivity) {
+                betshopClusterManager.createCluster(clusterManager, it)
             }
         }
 

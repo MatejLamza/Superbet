@@ -20,4 +20,6 @@ interface ClusterManagerService<T : ClusterItem> {
 
     fun updateCurrentlySelectedBetshop(clusterManager: ClusterManager<T>, marker: Marker?)
 
+    fun createCluster(clusterManager: ClusterManager<T>, dataset: Collection<T>)
+
 }

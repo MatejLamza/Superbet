@@ -44,10 +44,10 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
         processCameraJob = viewModelScope.launch {
             betshopRepository.fetchAllBetshopsForGivenLocation(
                 listOf(
-                    visibleRegion.farRight.latitude,
-                    visibleRegion.farRight.longitude,
-                    visibleRegion.nearLeft.latitude,
-                    visibleRegion.nearLeft.longitude,
+                    visibleRegion.farRight.latitude.round(),
+                    visibleRegion.farRight.longitude.round(),
+                    visibleRegion.nearLeft.latitude.round(),
+                    visibleRegion.nearLeft.longitude.round(),
                 ), {}, {}, {})
                 .onCompletion { Log.d(TAG, "Current visible region: ${visibleRegion}") }
                 .collectLatest { _visibleBetshops.value = it }
