@@ -20,6 +20,9 @@ appcompat = "1.6.1"
 material = "1.9.0"
 retrofit = "2.9.0"
 koin = "3.4.0"
+mapsKTX = "3.3.0"
+androidMapUtils = "2.2.3@aar"
+bindable = "1.1.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -41,7 +44,8 @@ kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-cor
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 #Maps
-maps-utils-ktx = { module = "com.google.maps.android:maps-utils-ktx", version.ref = "mapsUtilsKtx" }
+maps-utils-k = { module = "com.google.maps.android:maps-ktx", version.ref = "mapsKTX" }
+maps-utils-android = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapUtils" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 
@@ -62,6 +66,8 @@ moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 moshi-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 sandwich = { module = "com.github.skydoves:sandwich", version.ref = "sandwich" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing", version.ref = "ksp" }
+
+bindables = { module = "com.github.skydoves:bindables", version.ref = "bindable" }
 
 
 #TESTS

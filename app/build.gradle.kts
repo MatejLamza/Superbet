@@ -33,6 +33,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
         buildConfig = true
     }
 }
@@ -53,10 +54,12 @@ dependencies {
     //endregion
 
     //region MAPS
-    implementation(libs.maps.utils.ktx)
+    implementation(libs.maps.utils.k)
+
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.maps.utils.android)
     //endregion
 
     //region DI
@@ -68,7 +71,9 @@ dependencies {
     implementation(project(mapOf("path" to ":core-data")))
     implementation(project(mapOf("path" to ":core-network")))
     implementation(project(mapOf("path" to ":core-model")))
-    
+
+    implementation(libs.bindables)
+
     //region TESTS
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

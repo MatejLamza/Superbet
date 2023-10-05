@@ -20,5 +20,8 @@ android {
 }
 
 dependencies {
+    implementation("com.google.maps.android:android-maps-utils:2.2.3@aar")
+
     implementation(project(mapOf("path" to ":core-network")))
+    implementation(libs.play.services.maps)
 }
