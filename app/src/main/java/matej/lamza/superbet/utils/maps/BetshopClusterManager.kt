@@ -33,7 +33,8 @@ class BetshopClusterManager(
     private val _markerStateFlow = MutableStateFlow<MapMarkerState>(MapMarkerState.Inactive())
     private val _selectedBetshop = MutableStateFlow<Betshop?>(null)
 
-    override val markerStateFlow = _markerStateFlow.onEach { it.setStateIcon() }
+    override val markerStateFlow = _markerStateFlow
+        .onEach { it.setStateIcon() }
         .stateIn(externalScope, SharingStarted.WhileSubscribed(), _markerStateFlow.value)
     override val selectedBetshop: StateFlow<Betshop?>
         get() = _selectedBetshop.stateIn(externalScope, SharingStarted.WhileSubscribed(), _selectedBetshop.value)
@@ -44,7 +45,7 @@ class BetshopClusterManager(
         }
     }
 
-    // todo cleanup, set inactive part is not correctly handled this function now has 2 jobs to update marker state
+    // todo cleanup
     override fun updateMarkerState(currentlySelectedMarker: Marker?) {
         if (currentlySelectedMarker != null && _markerStateFlow.value.marker == null) {
             // No marker is selected yet

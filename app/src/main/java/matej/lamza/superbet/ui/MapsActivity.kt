@@ -12,8 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.ktx.awaitMap
@@ -26,6 +28,8 @@ import matej.lamza.core_model.MapMarkerState
 import matej.lamza.superbet.R
 import matej.lamza.superbet.databinding.ActivityMapsBinding
 import matej.lamza.superbet.utils.PermissionsHandler
+import matej.lamza.superbet.utils.extensions.infoSnackBar
+import matej.lamza.superbet.utils.extensions.toLatLng
 import matej.lamza.superbet.utils.location.LocationClient
 import matej.lamza.superbet.utils.maps.ClusterManagerService
 import org.koin.android.ext.android.inject
@@ -39,6 +43,7 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
 
     companion object {
         const val REQUEST_CHECK_SETTINGS = 90
+        val MUNICH_LOCATION = LatLng(48.137154, 11.576124)
     }
 
     private lateinit var clusterManager: ClusterManager<Betshop>
@@ -58,16 +63,16 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                    lifecycleScope.launch {
-                        locationClient
-                            .getCurrentLocation()
-                            .catch { showGPSPromptDialog(it) }
-                            .collectLatest { Log.d(TAG, "Received current location: $it ") }
-                    }
+                    handleCurrentLocation()
+                }
+
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    handleCurrentLocation()
                 }
 
                 else -> {
-                    Log.d(TAG, "Permissions are not granted ")
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(MUNICH_LOCATION, 16f))
+                    infoSnackBar(binding.root, getString(R.string.location_not_granted_message))
                 }
             }
         }
@@ -84,10 +89,11 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
                 lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
                     val mapFragment: SupportMapFragment =
                         supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-
                     map = mapFragment.awaitMap()
 
                     clusterManager = betshopClusterManager.setupClusterManager()
+
+                    PermissionsHandler.requestPermission(this@MapsActivity, binding.root, requestPermissionLauncher)
 
                     setupListeners()
                     setObservers()
@@ -103,10 +109,6 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
             //remove marker when user clicks somewhere else on the map
             //todo maybe call manager to restart marker state
             betshopClusterManager.updateMarkerState(null)
-        }
-
-        binding.currentLocation.setOnClickListener {
-            PermissionsHandler.requestPermission(this, this, requestPermissionLauncher)
         }
 
         clusterManager.markerCollection.setOnMarkerClickListener { marker ->
@@ -146,10 +148,16 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
 
     private fun showGPSPromptDialog(throwable: Throwable) {
         if (throwable is ResolvableApiException) runCatching {
-            throwable.startResolutionForResult(
-                this,
-                REQUEST_CHECK_SETTINGS
-            )
+            throwable.startResolutionForResult(this, REQUEST_CHECK_SETTINGS)
+        }
+    }
+
+    private fun handleCurrentLocation() {
+        lifecycleScope.launch {
+            locationClient.getCurrentLocation().catch { showGPSPromptDialog(it) }.collectLatest {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(it.toLatLng, 16f))
+                Log.d(TAG, "Received current location: $it ")
+            }
         }
     }
 }

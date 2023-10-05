@@ -2,4 +2,6 @@
     <string name="app_name">Superbet</string>
     <string name="betshop_open_now">Open now until %1$s</string>
     <string name="betshop_closed">Opens tomorrow at %1$s</string>
+    <string name="permission_rationale">If you want to get information about bet shops around you please allow Locations permissions</string>
+    <string name="location_not_granted_message">Current location not granted, displaying bet shops in Munich city center</string>
 </resources>
