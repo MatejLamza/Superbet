@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.VisibleRegion
 import com.skydoves.bindables.BindingViewModel
 import com.skydoves.bindables.bindingProperty
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onCompletion
@@ -27,6 +26,7 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
 
     @get:Bindable
     var betshop: Betshop? by bindingProperty(null)
+        private set
 
     fun updateSelectedBetshop(selectedBetshop: Betshop?) {
         if (selectedBetshop != null) betshop = selectedBetshop
@@ -38,7 +38,6 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
      * bottom-left latitude (lat2),
      * bottom-left longitude (lon2)"
      */
-    @OptIn(FlowPreview::class)
     fun processCameraMovement(visibleRegion: VisibleRegion) {
         if (processCameraJob != null && processCameraJob!!.isActive) processCameraJob!!.cancel()
         processCameraJob = viewModelScope.launch {

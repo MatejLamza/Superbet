@@ -22,6 +22,7 @@ import com.google.maps.android.ktx.awaitMap
 import com.skydoves.bindables.BindingActivity
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import matej.lamza.core_model.Betshop
 import matej.lamza.core_model.MapMarkerState
@@ -29,6 +30,7 @@ import matej.lamza.superbet.R
 import matej.lamza.superbet.databinding.ActivityMapsBinding
 import matej.lamza.superbet.utils.PermissionsHandler
 import matej.lamza.superbet.utils.extensions.infoSnackBar
+import matej.lamza.superbet.utils.extensions.openNavigation
 import matej.lamza.superbet.utils.extensions.toLatLng
 import matej.lamza.superbet.utils.location.LocationClient
 import matej.lamza.superbet.utils.maps.ClusterManagerService
@@ -115,6 +117,14 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
             betshopClusterManager.updateCurrentlySelectedBetshop(clusterManager, marker)
             betshopClusterManager.updateMarkerState(marker)
             true
+        }
+
+        binding.route.setOnClickListener {
+            lifecycleScope.launch {
+                betshopClusterManager.selectedBetshop.first()?.position?.let {
+                    openNavigation(it)
+                }
+            }
         }
     }
 

@@ -36,11 +36,7 @@ object PermissionsHandler {
         view: View,
         launcher: ActivityResultLauncher<Array<String>>
     ) {
-        activity.infoSnackBar(
-            view,
-            activity.getString(R.string.permission_rationale),
-            Snackbar.LENGTH_LONG
-        )
+        activity.infoSnackBar(view, activity.getString(R.string.permission_rationale), Snackbar.LENGTH_LONG)
             .addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     super.onDismissed(transientBottomBar, event)
