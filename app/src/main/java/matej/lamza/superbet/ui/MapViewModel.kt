@@ -5,10 +5,12 @@ import androidx.databinding.Bindable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.VisibleRegion
 import com.skydoves.bindables.BindingViewModel
-import com.skydoves.bindables.bindingProperty
+import com.skydoves.bindables.asBindingProperty
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -24,12 +26,19 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
     private val _visibleBetshops = MutableLiveData<List<Betshop>>()
     val visibleBetshops: LiveData<List<Betshop>> = _visibleBetshops
 
-    @get:Bindable
-    var betshop: Betshop? by bindingProperty(null)
-        private set
+    private val _selectedBetshop = MutableStateFlow<Betshop?>(null)
 
-    fun updateSelectedBetshop(selectedBetshop: Betshop?) {
-        if (selectedBetshop != null) betshop = selectedBetshop
+    @get:Bindable
+    val betShop: Betshop? by _selectedBetshop.asBindingProperty()
+
+    fun selectBetShop(betShops: Collection<Betshop>, marker: Marker?) {
+        viewModelScope.launch {
+            if (marker == null) {
+                _selectedBetshop.value = null
+                return@launch
+            }
+            _selectedBetshop.emit(betShops.find { it.position == marker.position })
+        }
     }
 
     /**

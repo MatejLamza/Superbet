@@ -31,13 +31,10 @@ class BetshopClusterManager(
 ) : ClusterManagerService<Betshop> {
 
     private val _markerStateFlow = MutableStateFlow<MapMarkerState>(MapMarkerState.Inactive())
-    private val _selectedBetshop = MutableStateFlow<Betshop?>(null)
 
     override val markerStateFlow = _markerStateFlow
         .onEach { it.setStateIcon() }
         .stateIn(externalScope, SharingStarted.WhileSubscribed(), _markerStateFlow.value)
-    override val selectedBetshop: StateFlow<Betshop?>
-        get() = _selectedBetshop.stateIn(externalScope, SharingStarted.WhileSubscribed(), _selectedBetshop.value)
 
     override fun setupClusterManager(): ClusterManager<Betshop> {
         return ClusterManager<Betshop>(activity, googleMap).apply {
@@ -45,7 +42,6 @@ class BetshopClusterManager(
         }
     }
 
-    // todo cleanup
     override fun updateMarkerState(currentlySelectedMarker: Marker?) {
         if (currentlySelectedMarker != null && _markerStateFlow.value.marker == null) {
             // No marker is selected yet
@@ -76,11 +72,4 @@ class BetshopClusterManager(
         clusterManager.cluster()
     }
 
-    override fun updateCurrentlySelectedBetshop(clusterManager: ClusterManager<Betshop>, marker: Marker?) {
-        if (marker == null) {
-            _selectedBetshop.value = null
-            return
-        }
-        _selectedBetshop.value = clusterManager.algorithm.items.find { it.position == marker?.position }
-    }
 }

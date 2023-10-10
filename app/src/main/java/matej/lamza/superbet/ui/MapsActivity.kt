@@ -22,7 +22,6 @@ import com.google.maps.android.ktx.awaitMap
 import com.skydoves.bindables.BindingActivity
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import matej.lamza.core_model.Betshop
 import matej.lamza.core_model.MapMarkerState
@@ -114,17 +113,13 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         }
 
         clusterManager.markerCollection.setOnMarkerClickListener { marker ->
-            betshopClusterManager.updateCurrentlySelectedBetshop(clusterManager, marker)
+            mapViewModel.selectBetShop(clusterManager.algorithm.items, marker)
             betshopClusterManager.updateMarkerState(marker)
             true
         }
 
         binding.route.setOnClickListener {
-            lifecycleScope.launch {
-                betshopClusterManager.selectedBetshop.first()?.position?.let {
-                    openNavigation(it)
-                }
-            }
+            mapViewModel.betShop?.let { openNavigation(it.position) }
         }
     }
 
@@ -132,12 +127,6 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         with(mapViewModel) {
             visibleBetshops.distinctUntilChanged().observe(this@MapsActivity) {
                 betshopClusterManager.createCluster(clusterManager, it)
-            }
-        }
-
-        lifecycleScope.launch {
-            betshopClusterManager.selectedBetshop.collect { selectedBetshop ->
-                mapViewModel.updateSelectedBetshop(selectedBetshop)
             }
         }
 
