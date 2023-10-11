@@ -107,9 +107,7 @@ class MapsActivity : BindingActivity<ActivityMapsBinding>(R.layout.activity_maps
         map.setOnCameraIdleListener { mapViewModel.processCameraMovement(map.projection.visibleRegion) }
 
         map.setOnMapClickListener {
-            //remove marker when user clicks somewhere else on the map
-            //todo maybe call manager to restart marker state
-            betshopClusterManager.updateMarkerState(null)
+            mapViewModel.selectBetShop(clusterManager.algorithm.items, null)
         }
 
         clusterManager.markerCollection.setOnMarkerClickListener { marker ->

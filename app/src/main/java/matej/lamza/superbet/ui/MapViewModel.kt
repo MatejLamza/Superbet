@@ -37,8 +37,13 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
                 _selectedBetshop.value = null
                 return@launch
             }
-            _selectedBetshop.emit(betShops.find { it.position == marker.position })
+            val selectedBetShop = getSelectedBetShop(betShops, marker)
+            _selectedBetshop.emit(selectedBetShop)
         }
+    }
+
+    private fun getSelectedBetShop(betShops: Collection<Betshop>, marker: Marker): Betshop? {
+        return betShops.find { it.position == marker.position }
     }
 
     /**
@@ -50,14 +55,12 @@ class MapViewModel(private val betshopRepository: BetshopRepository) : BindingVi
     fun processCameraMovement(visibleRegion: VisibleRegion) {
         if (processCameraJob != null && processCameraJob!!.isActive) processCameraJob!!.cancel()
         processCameraJob = viewModelScope.launch {
-            betshopRepository.fetchAllBetshopsForGivenLocation(
-                listOf(
-                    visibleRegion.farRight.latitude.round(),
-                    visibleRegion.farRight.longitude.round(),
-                    visibleRegion.nearLeft.latitude.round(),
-                    visibleRegion.nearLeft.longitude.round(),
-                ), {}, {}, {})
-                .onCompletion { Log.d(TAG, "Current visible region: ${visibleRegion}") }
+            betshopRepository.fetchAllBetshopsForGivenLocation(listOf(
+                visibleRegion.farRight.latitude.round(),
+                visibleRegion.farRight.longitude.round(),
+                visibleRegion.nearLeft.latitude.round(),
+                visibleRegion.nearLeft.longitude.round(),
+            ), {}, {}, {}).onCompletion { Log.d(TAG, "Current visible region: ${visibleRegion}") }
                 .collectLatest { _visibleBetshops.value = it }
         }
     }
